@@ -1,21 +1,38 @@
-#include <boost/asio.hpp>   // Include Boost.Asio for networking
-#include <iostream>         // For std::cout
+﻿#include <boost/asio.hpp> 
+#include <iostream>         
+#include <thread>    //3.
+#include <string>    //3.
 
 int main() {
     using namespace boost::asio;
-    io_context io;                 // 1.Main I/O context for asynchronous operations
+    io_context io;           
 
-    ip::tcp::socket socket(io);    // 1.Create a socket for the client
-    socket.connect(ip::tcp::endpoint(ip::make_address("127.0.0.1"), 1234)); // 1.Connect to the server
+    ip::tcp::socket socket(io);
+    socket.connect(ip::tcp::endpoint(ip::make_address("127.0.0.1"), 1234));
 
-    char welcome[128];       // 2.Receive welcome message from server
-    size_t id_len = socket.read_some(buffer(welcome));
-    std::cout << std::string(welcome, id_len); // 2.Print assigned client ID
+    std::thread listener([&socket]()
+        {
+            boost::asio::streambuf buf; // 3.
+            boost::system::error_code ec;
+            while (true)
+            {
+                boost::asio::read_until(socket, buf, '\n', ec); // 3. Wait until newline
+                if (ec) break;
+                std::istream is(&buf);
+                std::string line;
+                std::getline(is, line);
+                std::cout << "Server: " << line << "\n";
+            }
+        });
 
-    std::string msg = "Hello From Client!";      // 1.Message to send to the server
-    write(socket, buffer(msg));             // 1.Send the message
+    // Main thread: send messages from user input
+    std::string msg; 
+    while (std::getline(std::cin, msg))
+    {
+        if (msg == "exit") break;               // 3.
+        write(socket, buffer(msg + "\n"));  
+    }
 
-    char reply[128];                                              // 1.Buffer for the server's reply
-    size_t len = socket.read_some(buffer(reply));                 // 1.Read server response
-    std::cout << "Server Replyed: " << std::string(reply, len) << "\n";    // 1.Print the response
+    socket.close();  // 3. Close socket when done
+    listener.join(); // 3. Wait for listener to finish
 }
