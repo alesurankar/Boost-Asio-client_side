@@ -1,7 +1,7 @@
 ﻿#include <boost/asio.hpp> 
 #include <iostream>         
-#include <thread>    //3.
-#include <string>    //3.
+#include <thread>
+#include <string>
 
 int main() {
     using namespace boost::asio;
@@ -10,13 +10,20 @@ int main() {
     ip::tcp::socket socket(io);
     socket.connect(ip::tcp::endpoint(ip::make_address("127.0.0.1"), 1234));
 
+    // Send username first
+    std::string username;
+    std::cout << "Enter your username: ";
+    std::getline(std::cin, username);
+    write(socket, buffer(username + "\n"));
+
+    // Start listener thread to receive messages
     std::thread listener([&socket]()
         {
-            boost::asio::streambuf buf; // 3.
+            boost::asio::streambuf buf;
             boost::system::error_code ec;
             while (true)
             {
-                boost::asio::read_until(socket, buf, '\n', ec); // 3. Wait until newline
+                boost::asio::read_until(socket, buf, '\n', ec);
                 if (ec) break;
                 std::istream is(&buf);
                 std::string line;
@@ -26,13 +33,13 @@ int main() {
         });
 
     // Main thread: send messages from user input
-    std::string msg; 
+    std::string msg;
     while (std::getline(std::cin, msg))
     {
-        if (msg == "exit") break;               // 3.
-        write(socket, buffer(msg + "\n"));  
+        if (msg == "exit") break;
+        write(socket, buffer(msg + "\n"));
     }
 
-    socket.close();  // 3. Close socket when done
-    listener.join(); // 3. Wait for listener to finish
+    socket.close();
+    listener.join();
 }
