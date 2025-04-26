@@ -12,23 +12,37 @@ int main() {
 
     // Send username first
     std::string username;
-    std::cout << "Enter your username: ";
+    std::cout << "Enter your username to join the chat: ";
     std::getline(std::cin, username);
     write(socket, buffer(username + "\n"));
 
     // Start listener thread to receive messages
     std::thread listener([&socket]()
         {
-            boost::asio::streambuf buf;
-            boost::system::error_code ec;
-            while (true)
+            try
             {
-                boost::asio::read_until(socket, buf, '\n', ec);
-                if (ec) break;
-                std::istream is(&buf);
-                std::string line;
-                std::getline(is, line);
-                std::cout << "Server: " << line << "\n";
+                boost::asio::streambuf buf;
+                boost::system::error_code ec;
+                while (true)
+                {
+                    boost::asio::read_until(socket, buf, '\n', ec);
+                    if (ec)
+                    {
+                        std::cout << "Disconnected from server.\n";
+                        break;
+                    }
+                    std::istream is(&buf);
+                    std::string line;
+                    std::getline(is, line);
+                    if (!line.empty())
+                    {
+                        std::cout << line << "\n";
+                    }
+                }
+            }
+            catch (const std::exception& e)
+            {
+                std::cout << "Listener error: " << e.what() << "\n";
             }
         });
 
@@ -40,6 +54,7 @@ int main() {
         write(socket, buffer(msg + "\n"));
     }
 
+    socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     socket.close();
     listener.join();
 }
