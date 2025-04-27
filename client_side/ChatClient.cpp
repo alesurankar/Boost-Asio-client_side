@@ -1,48 +1,58 @@
 #include "ChatClient.h"
 
+using namespace boost;
 
-ChatClient::ChatClient(boost::asio::io_context& io, const std::string& host, unsigned short port, const std::string& username)
+ChatClient::ChatClient(asio::io_context& io_in, const std::string& host_in, unsigned short port_in, const std::string& username_in)
     : 
-    socket_(io), 
-    username_(username)
+    socket(io_in), 
+    username(username_in)
 {
-    Connect(host, port);
+    Connect(host_in, port_in);
 }
 
 
 void ChatClient::Start()
 {
     SendUsername();
-    listener_thread_ = std::thread([this]() { Listen(); });
+    listener_thread = std::thread([this]() { Listen(); });
     SendMessages();
-    listener_thread_.join();
+    listener_thread.join();
     Shutdown();
 }
 
 void ChatClient::Connect(const std::string& host, unsigned short port)
 {
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address(host), port);
-    socket_.connect(endpoint);
+    asio::ip::tcp::endpoint endpoint(asio::ip::make_address(host), port);
+    socket.connect(endpoint);
 }
 
 void ChatClient::SendUsername()
 {
-    boost::asio::write(socket_, boost::asio::buffer(username_ + "\n"));
+    asio::write(socket, asio::buffer(username + "\n"));
 }
 
 void ChatClient::Listen()
 {
-    try {
-        while (running_)
+    try 
+    {
+        while (true)
         {
-            boost::asio::streambuf buf;
-            boost::system::error_code ec;
-            boost::asio::read_until(socket_, buf, "\n", ec);
-            if (ec) {
-                if (ec == boost::asio::error::eof || ec == boost::asio::error::operation_aborted) {
-                    break;  // Socket closed or operation aborted => exit cleanly
+            std::lock_guard<std::mutex> lock(mtx);
+            if (!running)
+            {
+                break;
+            }
+            asio::streambuf buf;
+            system::error_code ec;
+            asio::read_until(socket, buf, "\n", ec);
+            if (ec)
+            {
+                if (ec == asio::error::eof || ec == asio::error::operation_aborted)
+                {
+                    break;
                 }
-                else {
+                else
+                {
                     std::cerr << "Listen error: " << ec.message() << "\n";
                     break;
                 }
@@ -51,10 +61,13 @@ void ChatClient::Listen()
             std::string message;
             std::getline(is, message);
             if (!message.empty())
+            {
                 std::cout << message << "\n";
+            }
         }
     }
-    catch (...) {
+    catch (...)
+    {
         std::cerr << "Exception in Listen thread\n";
     }
 }
@@ -67,15 +80,17 @@ void ChatClient::SendMessages()
     {
         if (msg == "exit")
         {
-            running_ = false; // signal listen thread to stop
-            boost::system::error_code ignored_ec;
-            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec); // wake up listener
+            running = false;
+            system::error_code ignored_ec;
+            socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
             break;
         }
-        if (socket_.is_open()) {
-            boost::asio::write(socket_, boost::asio::buffer(msg + "\n"));
+        if (socket.is_open())
+        {
+            asio::write(socket, asio::buffer(msg + "\n"));
         }
-        else {
+        else 
+        {
             std::cout << "Socket is closed. Cannot send message.\n";
             break;
         }
@@ -85,14 +100,17 @@ void ChatClient::SendMessages()
 
 void ChatClient::Shutdown()
 {
-    try {
-        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+    try
+    {
+        socket.shutdown(asio::ip::tcp::socket::shutdown_both);
     }
-    catch (const boost::system::system_error& e) {
+    catch (const system::system_error& e)
+    {
         std::cout << "Shutdown failed: " << e.what() << "\n";
     }
-    socket_.close();
-
-    if (listener_thread_.joinable())
-        listener_thread_.join();
+    socket.close();
+    if (listener_thread.joinable())
+    {
+        listener_thread.join();
+    }
 }

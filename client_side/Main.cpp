@@ -8,7 +8,6 @@ int main() {
     if (file.is_open()) 
     {
         std::getline(file, username);
-        //std::cout << username << "\n";
     }
     boost::asio::io_context io;
     ChatClient client(io, "127.0.0.1", 1234, username);
