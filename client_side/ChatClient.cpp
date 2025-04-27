@@ -1,20 +1,23 @@
 #include "ChatClient.h"
 
-ChatClient::ChatClient(boost::asio::io_context& io, const std::string& host, unsigned short port)
+
+ChatClient::ChatClient(boost::asio::io_context& io, const std::string& host, unsigned short port, const std::string& username)
     : 
-    socket_(io)
+    socket_(io), 
+    username_(username)
 {
     Connect(host, port);
 }
+
 
 void ChatClient::Start()
 {
     SendUsername();
     listener_thread_ = std::thread([this]() { Listen(); });
     SendMessages();
+    listener_thread_.join();
     Shutdown();
 }
-
 
 void ChatClient::Connect(const std::string& host, unsigned short port)
 {
@@ -24,54 +27,72 @@ void ChatClient::Connect(const std::string& host, unsigned short port)
 
 void ChatClient::SendUsername()
 {
-    std::cout << "Enter your username to join the chat: ";
-    std::getline(std::cin, username_);
     boost::asio::write(socket_, boost::asio::buffer(username_ + "\n"));
 }
 
 void ChatClient::Listen()
 {
-    try
-    {
-        boost::asio::streambuf buf;
-        boost::system::error_code ec;
-        while (true)
+    try {
+        while (running_)
         {
-            boost::asio::read_until(socket_, buf, '\n', ec);
-            if (ec)
-            {
-                std::cout << "Disconnected from server.\n";
-                break;
+            boost::asio::streambuf buf;
+            boost::system::error_code ec;
+            boost::asio::read_until(socket_, buf, "\n", ec);
+            if (ec) {
+                if (ec == boost::asio::error::eof || ec == boost::asio::error::operation_aborted) {
+                    break;  // Socket closed or operation aborted => exit cleanly
+                }
+                else {
+                    std::cerr << "Listen error: " << ec.message() << "\n";
+                    break;
+                }
             }
             std::istream is(&buf);
-            std::string line;
-            std::getline(is, line);
-            if (!line.empty())
-            {
-                std::cout << line << "\n";
-            }
+            std::string message;
+            std::getline(is, message);
+            if (!message.empty())
+                std::cout << message << "\n";
         }
     }
-    catch (const std::exception& e)
-    {
-        std::cout << "Listener error: " << e.what() << "\n";
+    catch (...) {
+        std::cerr << "Exception in Listen thread\n";
     }
 }
+
 
 void ChatClient::SendMessages()
 {
     std::string msg;
     while (std::getline(std::cin, msg))
     {
-        if (msg == "exit") break;
-        boost::asio::write(socket_, boost::asio::buffer(msg + "\n"));
+        if (msg == "exit")
+        {
+            running_ = false; // signal listen thread to stop
+            boost::system::error_code ignored_ec;
+            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec); // wake up listener
+            break;
+        }
+        if (socket_.is_open()) {
+            boost::asio::write(socket_, boost::asio::buffer(msg + "\n"));
+        }
+        else {
+            std::cout << "Socket is closed. Cannot send message.\n";
+            break;
+        }
     }
 }
 
+
 void ChatClient::Shutdown()
 {
-    socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+    try {
+        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+    }
+    catch (const boost::system::system_error& e) {
+        std::cout << "Shutdown failed: " << e.what() << "\n";
+    }
     socket_.close();
+
     if (listener_thread_.joinable())
         listener_thread_.join();
 }
