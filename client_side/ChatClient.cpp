@@ -14,9 +14,8 @@ ChatClient::ChatClient(asio::io_context& io_in, const std::string& host_in, unsi
 void ChatClient::Start()
 {
     SendUsername();
-    listener_thread = std::thread([this]() { Listen(); });
+    Listen();
     SendMessages();
-    listener_thread.join();
     Shutdown();
 }
 
@@ -33,30 +32,26 @@ void ChatClient::SendUsername()
 
 void ChatClient::Listen()
 {
-    try 
-    {
-        while (true)
+    asio::streambuf buf;
+    system::error_code ec;
+
+    // Start asynchronous read operation
+    asio::async_read_until(socket, buf, "\n",
+        [this, &buf](system::error_code ec, std::size_t bytes_transferred)
         {
-            std::lock_guard<std::mutex> lock(mtx);
-            if (!running)
-            {
-                break;
-            }
-            asio::streambuf buf;
-            system::error_code ec;
-            asio::read_until(socket, buf, "\n", ec);
             if (ec)
             {
                 if (ec == asio::error::eof || ec == asio::error::operation_aborted)
                 {
-                    break;
+                    std::cout << "Connection closed or operation aborted.\n";
                 }
                 else
                 {
                     std::cerr << "Listen error: " << ec.message() << "\n";
-                    break;
                 }
+                return;
             }
+
             std::istream is(&buf);
             std::string message;
             std::getline(is, message);
@@ -64,12 +59,9 @@ void ChatClient::Listen()
             {
                 std::cout << message << "\n";
             }
-        }
-    }
-    catch (...)
-    {
-        std::cerr << "Exception in Listen thread\n";
-    }
+
+            Listen();
+        });
 }
 
 
@@ -109,8 +101,4 @@ void ChatClient::Shutdown()
         std::cout << "Shutdown failed: " << e.what() << "\n";
     }
     socket.close();
-    if (listener_thread.joinable())
-    {
-        listener_thread.join();
-    }
 }

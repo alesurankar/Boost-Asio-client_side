@@ -1,7 +1,6 @@
 #pragma once
 #include <boost/asio.hpp>
-#include <iostream>         
-#include <thread>
+#include <iostream>  
 #include <string>
 #include <atomic>
 #include <mutex>
@@ -19,7 +18,6 @@ private:
 private:
     std::mutex mtx;
     boost::asio::ip::tcp::socket socket;
-    std::thread listener_thread;
     std::string username; 
     std::atomic<bool> running{ true };
 };
