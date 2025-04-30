@@ -14,8 +14,6 @@ ChatClient::ChatClient(asio::io_context& io_in, const std::string& host_in, unsi
 void ChatClient::Start()
 {
     SendUsername();
-    Listen();
-    SendMessages();
     Shutdown();
 }
 
@@ -30,70 +28,13 @@ void ChatClient::SendUsername()
     asio::write(socket, asio::buffer(username + "\n"));
 }
 
-void ChatClient::Listen()
-{
-    asio::streambuf buf;
-    system::error_code ec;
-
-    // Start asynchronous read operation
-    asio::async_read_until(socket, buf, "\n",
-        [this, &buf](system::error_code ec, std::size_t bytes_transferred)
-        {
-            if (ec)
-            {
-                if (ec == asio::error::eof || ec == asio::error::operation_aborted)
-                {
-                    std::cout << "Connection closed or operation aborted.\n";
-                }
-                else
-                {
-                    std::cerr << "Listen error: " << ec.message() << "\n";
-                }
-                return;
-            }
-
-            std::istream is(&buf);
-            std::string message;
-            std::getline(is, message);
-            if (!message.empty())
-            {
-                std::cout << message << "\n";
-            }
-
-            Listen();
-        });
-}
-
-
-void ChatClient::SendMessages()
-{
-    std::string msg;
-    while (std::getline(std::cin, msg))
-    {
-        if (msg == "exit")
-        {
-            running = false;
-            system::error_code ignored_ec;
-            socket.shutdown(asio::ip::tcp::socket::shutdown_both, ignored_ec);
-            break;
-        }
-        if (socket.is_open())
-        {
-            asio::write(socket, asio::buffer(msg + "\n"));
-        }
-        else 
-        {
-            std::cout << "Socket is closed. Cannot send message.\n";
-            break;
-        }
-    }
-}
 
 
 void ChatClient::Shutdown()
 {
     try
     {
+        socket.cancel();
         socket.shutdown(asio::ip::tcp::socket::shutdown_both);
     }
     catch (const system::system_error& e)

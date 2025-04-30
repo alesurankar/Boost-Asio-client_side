@@ -4,7 +4,7 @@
 App::App()
 {}
 
-void App::Run()
+void App::Go()
 {
 	TakeInput();
 	DisplayOutput();

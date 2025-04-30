@@ -1,4 +1,5 @@
 #pragma once
+#include "MessageHandler.h"
 #include <boost/asio.hpp>
 #include <iostream>  
 #include <string>
@@ -16,8 +17,8 @@ private:
     void SendMessages();
     void Shutdown();
 private:
+    MessageHandler msg;
     std::mutex mtx;
     boost::asio::ip::tcp::socket socket;
     std::string username; 
-    std::atomic<bool> running{ true };
 };

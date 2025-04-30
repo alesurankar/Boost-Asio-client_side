@@ -6,7 +6,7 @@ class App
 {
 public:
 	App();
-	void Run();
+	void Go();
 	void TakeInput();
 	void DisplayOutput();
 private:
