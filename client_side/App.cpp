@@ -64,7 +64,10 @@ void App::SendToServer()
 
 void App::ReceiveFromServer()
 {
-	std::cout << "ReceiveFromServer:\n";
-	std::make_pair(x, y) = msg.MSGToApp();
+	std::cout << "ReceiveFromServer:\n"; 
+	std::pair<int, int> pos = msg.MSGToApp();
+	x = pos.first;
+	y = pos.second;
+
 	std::cout << "--------------\n";
 }

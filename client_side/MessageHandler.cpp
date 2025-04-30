@@ -15,6 +15,7 @@ std::pair<int, int> MessageHandler::MSGToApp()
     std::lock_guard<std::mutex> lock(mtx);
     //app_position.push(std::make_pair(x, y));
 	return ServerToMSG();
+	int z = 0;
 }
 
 void MessageHandler::AppToMSG(const std::string& message)
