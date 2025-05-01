@@ -7,7 +7,7 @@
 
 int main() 
 {
-    //App app; 
+    App app; 
     
     std::ifstream file("C:/Projects/Python_API_setup_for_NinjaStrike/username.txt");
     std::string username; 
@@ -18,18 +18,18 @@ int main()
     
     boost::asio::io_context io;
     ChatClient client(io, "127.0.0.1", 1234, username);
-    //std::thread networking([&]()
-    //    {
-            client.Start();
-            io.run();
-    //    });
+    std::thread networking([&]()
+        {
+          client.Start();
+          io.run();
+        });
 
-    //while (true)
-	//{
-    //    app.Go();
-	//}
+    while (true)
+	{
+        app.Go();
+	}
     
-    //networking.join();
+    networking.join();
     return 0;
 }
 
