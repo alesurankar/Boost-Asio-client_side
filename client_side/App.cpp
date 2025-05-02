@@ -1,73 +1,55 @@
 #include "App.h"
 #include <iostream>
 
-App::App()
+
+App::App(std::shared_ptr<MessageHandler> handler)
+    :
+    msgHandler(handler)
 {}
+
 
 void App::Go()
 {
-	TakeInput();
+	std::cout << "App::Go:\n";
+	PlayerInput();
 	DisplayOutput();
 }
 
-void App::TakeInput()
+
+void App::PlayerInput()
 {
-	std::cout << "TakeInput: ";
-	std::string message;
-	std::getline(std::cin, message);
-	PlayerInput(message);
-	std::cout << "--------------\n";
+    std::cout << "App::PlayerInput:\n";
+    std::string input;
+    std::getline(std::cin, input);
+
+    if (input == "UP")
+    {
+        msgHandler->AppToMSG("move_up");
+    }
+    else if (input == "DWN")
+    {
+        msgHandler->AppToMSG("move_down");
+    }
+    else if (input == "LFT")
+    {
+        msgHandler->AppToMSG("move_left");
+    }
+    else if (input == "RGT")
+    {
+        msgHandler->AppToMSG("move_right");
+    }
+
+    std::cout << "--------------\n";
 }
+
 
 void App::DisplayOutput()
 {
-	std::cout << "DisplayOutput:\n";
-	ReceiveFromServer();
-	std::cout << "x: " << x << "\n";
-	std::cout << "y: " << y << "\n";
-	std::cout << "--------------\n";
-}
-
-
-void App::PlayerInput(const std::string command_in)
-{
-	std::cout << "PlayerInput:\n";
-	if (command_in == "UP")
-	{
-		command = "move_up";
-		SendToServer();
-	}
-	if (command_in == "DWN")
-	{
-		command = "move_down";
-		SendToServer();
-	}
-	if (command_in == "LFT")
-	{
-		command = "move_left";
-		SendToServer();
-	}
-	if (command_in == "RGT")
-	{
-		command = "move_right";
-		SendToServer();
-	}
-	std::cout << "--------------\n";
-}
-
-void App::SendToServer()
-{
-	std::cout << "SendToServer:\n";
-	msg.AppToMSG(command);
-	std::cout << "--------------\n";
-}
-
-void App::ReceiveFromServer()
-{
-	std::cout << "ReceiveFromServer:\n"; 
-	std::pair<int, int> pos = msg.MSGToApp();
-	x = pos.first;
-	y = pos.second;
-
+	std::cout << "App::DisplayOutput:\n";
+	//std::pair<int, int> pos = msg.MSGToApp();
+	//int x = pos.first;
+	//int y = pos.second;
+	//std::cout << "x: " << x << "\n";
+	//std::cout << "y: " << y << "\n";
 	std::cout << "--------------\n";
 }

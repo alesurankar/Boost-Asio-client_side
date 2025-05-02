@@ -8,10 +8,10 @@ class MessageHandler
 {
 public:
     MessageHandler();
-    void ClientToMSG(int x, int y);
-    std::pair<int, int> MSGToApp();
     void AppToMSG(const std::string& message);
     std::string MSGToClient();
+    void ClientToMSG(int x, int y);
+    std::pair<int, int> MSGToApp();
 private:
     std::queue<std::string> app_messages;
     std::queue<std::string> client_messages;

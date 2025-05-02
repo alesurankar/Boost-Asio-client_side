@@ -6,70 +6,128 @@
 
 using namespace boost;
 
-ChatClient::ChatClient(asio::io_context& io_in, const std::string& host_in, unsigned short port_in, const std::string& username_in)
+ChatClient::ChatClient(asio::io_context& io_in, const std::string& host_in, unsigned short port_in, const std::string& username_in, std::shared_ptr<MessageHandler> handler)
     :
     socket(io_in),
-    username(username_in)
-{
-    Connect(host_in, port_in);
-}
+    username(username_in),
+    host(host_in),
+    port(port_in),
+    message_timer(io_in),
+    msgHandler(handler)
+{}
 
 void ChatClient::Start()
 {
-    SendUsername();
-    Listen();
-    SendMessages();
-    Shutdown();
+    std::cout << "ChatClient::Start\n";
+    auto self = shared_from_this();
+    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address(host), port);
+
+    socket.async_connect(endpoint, [this, self](boost::system::error_code ec) 
+        {
+            if (!ec)
+            {
+                SendUsername();
+                ReceiveMessages();
+                CheckAndSendMessage();
+            }
+            else
+            {
+                std::cerr << "Connect failed: " << ec.message() << "\n";
+            }
+        });
 }
 
-void ChatClient::Connect(const std::string& host, unsigned short port)
-{
-    asio::ip::tcp::endpoint endpoint(asio::ip::make_address(host), port);
-    socket.connect(endpoint);
-}
 
 void ChatClient::SendUsername()
 {
+    std::cout << "ChatClient::SendUsername:\n";
     asio::write(socket, asio::buffer(username + "\n"));
 }
 
-void ChatClient::Listen()
+
+void ChatClient::ReceiveMessages()
 {
-    std::thread([this]()
+    std::cout << "ChatClient::ReceiveMessages:\n";
+    auto self(shared_from_this());
+
+    boost::asio::async_read_until(socket, buffer_, '\n',
+
+        [this, self](boost::system::error_code ec, std::size_t length)
         {
-            try {
-                while (true)
+            try
+            {
+                if (!ec)
                 {
-                    char buffer[512];
-                    boost::system::error_code error;
-                    size_t length = socket.read_some(asio::buffer(buffer), error);
-                    if (error)
+                    std::istream is(&buffer_);
+                    std::string message;
+                    std::getline(is, message);
+                    std::cout << "Received: " << message << "\n";
+
+                    int x, y;
+                    std::istringstream iss(message);
+                    if (iss >> x >> y)
                     {
-                        std::cerr << "Error reading message: " << error.message() << "\n";
-                        break;
+                        msgHandler->ClientToMSG(x, y);
                     }
-                    std::cout << "Received message: " << std::string(buffer, length) << "\n";
+                    else
+                    {
+                        std::cout << "Failed to parse coordinates from message.\n";
+                    }
+
+
+                    ReceiveMessages();
+                }
+                else
+                {
+                    Shutdown();
                 }
             }
             catch (const std::exception& e)
             {
-                std::cerr << "Listen thread error: " << e.what() << "\n";
+                std::cerr << "Async handler exception in ReceiveMessages: " << e.what() << "\n";
             }
-        }).detach();
+        });
 }
 
-void ChatClient::SendMessages()
+
+void ChatClient::CheckAndSendMessage()
 {
-    std::string message;
-    while (true) {
-        std::getline(std::cin, message);
-        if (message == "/exit") break;
-        asio::write(socket, asio::buffer(message + "\n"));
+    //std::cout << "ChatClient::CheckAndSendMessage:\n";
+    auto self(shared_from_this());
+    std::string message = msgHandler->MSGToClient();
+
+    if (!message.empty())
+    {
+        boost::asio::async_write(socket, boost::asio::buffer(message + "\n"),
+            [this, self](boost::system::error_code ec, std::size_t)
+            {
+                if (ec)
+                {
+                    std::cerr << "Send error: " << ec.message() << "\n";
+                    Shutdown();
+                    return;
+                }
+
+                CheckAndSendMessage();
+            });
+    }
+    else
+    {
+        message_timer.expires_after(std::chrono::milliseconds(100));
+        message_timer.async_wait([this, self](boost::system::error_code ec)
+            {
+                if (!ec)
+                {
+                    CheckAndSendMessage();
+                }
+            });
     }
 }
 
+
 void ChatClient::Shutdown()
 {
+    std::cout << "ChatClient::Shutdown:\n";
     try
     {
         socket.cancel();

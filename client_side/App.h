@@ -5,17 +5,10 @@
 class App
 {
 public:
-	App();
+	App(std::shared_ptr<MessageHandler> handler);
 	void Go();
-	void TakeInput();
+	void PlayerInput();
 	void DisplayOutput();
 private:
-	void PlayerInput(const std::string command_in);
-	void SendToServer();
-	void ReceiveFromServer();
-private:
-	std::string command;
-	MessageHandler msg;
-	int x;
-	int y;
+	std::shared_ptr<MessageHandler> msgHandler = std::make_shared<MessageHandler>();
 };
