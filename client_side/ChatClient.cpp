@@ -50,40 +50,33 @@ void ChatClient::ReceiveMessages()
 
         [this, self](boost::system::error_code ec, std::size_t length)
         {
-            try
+            if (!ec)
             {
-                if (!ec)
+                std::istream is(&buffer_);
+                std::string message;
+                std::getline(is, message);
+
+                //buffer_.consume(length);
+
+                std::cout << "Received: " << message << "\n";
+
+                int x, y;
+                std::istringstream iss(message);
+                if (iss >> x >> y)
                 {
-                    std::istream is(&buffer_);
-                    std::string message;
-                    std::getline(is, message);
-
-                    //buffer_.consume(length);
-
-                    std::cout << "Received: " << message << "\n";
-
-                    int x, y;
-                    std::istringstream iss(message);
-                    if (iss >> x >> y)
-                    {
-                        msgHandler->ClientToMSG(x, y);
-                    }
-                    else
-                    {
-                        std::cout << "Failed to parse coordinates from message.\n";
-                    }
-
-
-                    ReceiveMessages();
+                    msgHandler->ClientToMSG(x, y);
                 }
                 else
                 {
-                    Shutdown();
+                    std::cout << "Failed to parse coordinates from message.\n";
                 }
+
+
+                ReceiveMessages();
             }
-            catch (const std::exception& e)
+            else
             {
-                std::cerr << "Async handler exception in ReceiveMessages: " << e.what() << "\n";
+                Shutdown();
             }
         });
 }
@@ -91,7 +84,7 @@ void ChatClient::ReceiveMessages()
 
 void ChatClient::CheckAndSendMessage()
 {
-    std::cout << "ChatClient::CheckAndSendMessage:\n";
+    //std::cout << "ChatClient::CheckAndSendMessage:\n";
     auto self = shared_from_this();
     std::string message = msgHandler->MSGToClient();
     

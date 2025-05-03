@@ -19,6 +19,10 @@ int main()
     
     boost::asio::io_context io; 
     auto client = std::make_shared<ChatClient>(io, "127.0.0.1", 1234, username, msgHandler);
+    boost::asio::post(io, [client]()
+        {
+            client->Start();
+        });
     client->Start();
     std::thread networking([&]()
         {
