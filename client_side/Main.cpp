@@ -23,7 +23,6 @@ int main()
         {
             client->Start();
         });
-    client->Start();
     std::thread networking([&]()
         {
             try 
@@ -45,4 +44,14 @@ int main()
     return 0;
 }
 
-//App -> MSG -> Client -> Server -> Client -> MSG -> App
+//1. AppClient(input) -> 
+//2. MSGClient(middleman) -> 
+//3. Client(TCP) -> 
+//4. Server(TCP) -> 
+//5. MSGServer(middleman) -> 
+//6. AppServer(updateParameters) -> 
+//7. MSGServer(middleman) -> 
+//8. Server(TCP) -> 
+//9. Client(TCP) ->
+//10. MSGClient(middleman) ->
+//11. AppClient(displayOutput)

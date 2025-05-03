@@ -1,4 +1,6 @@
 #include "ChatClient.h"
+#include <chrono>
+#include <thread>
 
 using namespace boost;
 
@@ -41,13 +43,12 @@ void ChatClient::SendUsername()
 }
 
 
-void ChatClient::ReceiveMessages()
+void ChatClient::ReceiveMessages() //9. Client(TCP)
 {
-    std::cout << "ChatClient::ReceiveMessages:\n";
+    std::cout << "ChatClient::ReceiveMessages: " << "//9. Client(TCP)\n";
     auto self(shared_from_this());
 
-    boost::asio::async_read_until(socket, buffer_, '\n',
-
+    boost::asio::async_read_until(socket, buffer_, '\n', //8. Server(TCP)
         [this, self](boost::system::error_code ec, std::size_t length)
         {
             if (!ec)
@@ -56,22 +57,26 @@ void ChatClient::ReceiveMessages()
                 std::string message;
                 std::getline(is, message);
 
-                //buffer_.consume(length);
-
                 std::cout << "Received: " << message << "\n";
 
-                int x, y;
-                std::istringstream iss(message);
-                if (iss >> x >> y)
+                size_t commaPos = message.find(',');
+                if (commaPos != std::string::npos)
                 {
-                    msgHandler->ClientToMSG(x, y);
+                    try
+                    {
+                        int x = std::stoi(message.substr(0, commaPos));
+                        int y = std::stoi(message.substr(commaPos + 1));
+                        msgHandler->ClientToMSG(x, y); //10. MSGClient(middleman)
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cout << "Failed to convert coordinates: " << e.what() << "\n";
+                    }
                 }
                 else
                 {
-                    std::cout << "Failed to parse coordinates from message.\n";
+                    std::cout << "Invalid coordinate format: " << message << "\n";
                 }
-
-
                 ReceiveMessages();
             }
             else
@@ -82,16 +87,16 @@ void ChatClient::ReceiveMessages()
 }
 
 
-void ChatClient::CheckAndSendMessage()
+void ChatClient::CheckAndSendMessage() //3. Client(TCP)
 {
-    //std::cout << "ChatClient::CheckAndSendMessage:\n";
+    std::cout << "ChatClient::CheckAndSendMessage: " << "//3. Client(TCP)\n";
     auto self = shared_from_this();
-    std::string message = msgHandler->MSGToClient();
+    std::string message = msgHandler->MSGToClient();  //3. Client(TCP)
     
     if (!message.empty())
     {
         std::cout << "ChatClient::CheckAndSendMessage: Writing: " << message << "\n";
-        boost::asio::async_write(socket, boost::asio::buffer(message + "\n"),
+        boost::asio::async_write(socket, boost::asio::buffer(message + "\n"), //4. Server(TCP)
             [this, self](boost::system::error_code ec, std::size_t)
             {
                 if (ec)
@@ -103,6 +108,10 @@ void ChatClient::CheckAndSendMessage()
     
                 CheckAndSendMessage();
             });
+    }
+    else
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 

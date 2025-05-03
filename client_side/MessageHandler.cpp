@@ -6,18 +6,18 @@ MessageHandler::MessageHandler()
 {}
 
 
-void MessageHandler::AppToMSG(const std::string& message)
+void MessageHandler::AppToMSG(const std::string& message)  //2. MSGClient(middleman)
 {
-    //std::cout << "MessageHandler::AppToMSG: " << message << "\n";
+    std::cout << "MessageHandler::AppToMSG: " << message << "//2. MSGClient(middleman)\n";
     std::lock_guard<std::mutex> lock(mtx);
     app_messages.push(message);
     std::cout << "Pushed message: " << message << "\n";
 }
 
 
-std::string MessageHandler::MSGToClient()
+std::string MessageHandler::MSGToClient()  //3. Client(TCP)
 {
-    //std::cout << "MessageHandler::MSGToClient::Queue size : " << app_messages.size() << "\n";
+    std::cout << "MessageHandler::MSGToClient::Queue size : " << app_messages.size() << "//3. Client(TCP)\n";
     std::lock_guard<std::mutex> lock(mtx);
     if (!app_messages.empty())
     {
@@ -31,9 +31,9 @@ std::string MessageHandler::MSGToClient()
 }
 
 
-void MessageHandler::ClientToMSG(int x, int y)
+void MessageHandler::ClientToMSG(int x, int y) //10. MSGClient(middleman)
 {
-    std::cout << "MessageHandler::ClientToMSG: x = " << x << ", y = " << y << "\n";
+    std::cout << "MessageHandler::ClientToMSG: x = " << x << ", y = " << y << "//10. MSGClient(middleman)\n";
     std::lock_guard<std::mutex> lock(mtx);
 	app_position.push(std::make_pair(x, y));
 }
