@@ -9,7 +9,6 @@ ChatClient::ChatClient(boost::asio::io_context& io, const std::string& host, uns
 
 void ChatClient::Start()
 {
-    SendUsername();
     listener_thread_ = std::thread([this]() { Listen(); });
     SendMessages();
     Shutdown();
@@ -22,12 +21,6 @@ void ChatClient::Connect(const std::string& host, unsigned short port)
     socket_.connect(endpoint);
 }
 
-void ChatClient::SendUsername()
-{
-    std::cout << "Enter your username to join the chat: ";
-    std::getline(std::cin, username_);
-    boost::asio::write(socket_, boost::asio::buffer(username_ + "\n"));
-}
 
 void ChatClient::Listen()
 {
