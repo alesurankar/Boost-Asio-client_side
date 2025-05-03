@@ -17,7 +17,7 @@ private:
     void CheckAndSendMessage();
     void Shutdown();
 private:
-    std::shared_ptr<MessageHandler> msgHandler = std::make_shared<MessageHandler>();
+    std::shared_ptr<MessageHandler> msgHandler;
     std::mutex mtx;
     boost::asio::ip::tcp::socket socket;
     std::string username;
@@ -25,5 +25,6 @@ private:
     boost::asio::streambuf buffer_;
     std::string host;
     unsigned short port; 
-    boost::asio::steady_timer message_timer;
+    boost::asio::steady_timer message_timer; 
+
 };

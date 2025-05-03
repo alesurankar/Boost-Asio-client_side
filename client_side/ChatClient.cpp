@@ -1,8 +1,4 @@
 #include "ChatClient.h"
-#include <boost/asio.hpp>
-#include <iostream>
-#include <thread>
-#include <atomic>
 
 using namespace boost;
 
@@ -40,7 +36,7 @@ void ChatClient::Start()
 
 void ChatClient::SendUsername()
 {
-    std::cout << "ChatClient::SendUsername:\n";
+    std::cout << "ChatClient::SendUsername: "<< username << "\n";
     asio::write(socket, asio::buffer(username + "\n"));
 }
 
@@ -61,6 +57,9 @@ void ChatClient::ReceiveMessages()
                     std::istream is(&buffer_);
                     std::string message;
                     std::getline(is, message);
+
+                    //buffer_.consume(length);
+
                     std::cout << "Received: " << message << "\n";
 
                     int x, y;
@@ -92,12 +91,13 @@ void ChatClient::ReceiveMessages()
 
 void ChatClient::CheckAndSendMessage()
 {
-    //std::cout << "ChatClient::CheckAndSendMessage:\n";
-    auto self(shared_from_this());
+    std::cout << "ChatClient::CheckAndSendMessage:\n";
+    auto self = shared_from_this();
     std::string message = msgHandler->MSGToClient();
-
+    
     if (!message.empty())
     {
+        std::cout << "ChatClient::CheckAndSendMessage: Writing: " << message << "\n";
         boost::asio::async_write(socket, boost::asio::buffer(message + "\n"),
             [this, self](boost::system::error_code ec, std::size_t)
             {
@@ -107,19 +107,8 @@ void ChatClient::CheckAndSendMessage()
                     Shutdown();
                     return;
                 }
-
+    
                 CheckAndSendMessage();
-            });
-    }
-    else
-    {
-        message_timer.expires_after(std::chrono::milliseconds(100));
-        message_timer.async_wait([this, self](boost::system::error_code ec)
-            {
-                if (!ec)
-                {
-                    CheckAndSendMessage();
-                }
             });
     }
 }
@@ -131,7 +120,8 @@ void ChatClient::Shutdown()
     try
     {
         socket.cancel();
-        socket.shutdown(asio::ip::tcp::socket::shutdown_both);
+        socket.shutdown(asio::ip::tcp::socket::shutdown_both); 
+        message_timer.cancel();
     }
     catch (const system::system_error& e)
     {
