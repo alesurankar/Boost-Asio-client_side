@@ -3,10 +3,12 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <atomic>
 
 
 int main() 
 {
+    std::atomic<bool> running(true);
     std::shared_ptr<MessageHandler> msgHandler = std::make_shared<MessageHandler>();
     App app(msgHandler);
     
@@ -35,7 +37,7 @@ int main()
             }
         });
 
-    while (true)
+    while (running)
 	{
         app.Go();
 	}

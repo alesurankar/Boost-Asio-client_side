@@ -25,9 +25,9 @@ std::string MessageHandler::MSGToClient()  //3. Client(TCP)
         app_messages.pop();
         std::cout << "Popped message: " << msg << "\n";
 
-        return msg;
+        return msg; //3. Client(TCP)
     }
-    return "";
+    return ""; //3. Client(TCP)
 }
 
 
@@ -35,7 +35,7 @@ void MessageHandler::ClientToMSG(int x, int y) //10. MSGClient(middleman)
 {
     std::cout << "MessageHandler::ClientToMSG: x = " << x << ", y = " << y << "//10. MSGClient(middleman)\n";
     std::lock_guard<std::mutex> lock(mtx);
-	app_position.push(std::make_pair(x, y));
+    app_position.push(std::make_pair(x, y));
 }
 
 

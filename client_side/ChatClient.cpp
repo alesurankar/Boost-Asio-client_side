@@ -38,6 +38,9 @@ void ChatClient::Start()
 
 void ChatClient::SendUsername()
 {
+    //std::string first_command = "UP";
+    //std::cout << "ChatClient::SendUsername: " << first_command << "\n";
+    //asio::write(socket, asio::buffer(first_command + "\n"));
     std::cout << "ChatClient::SendUsername: "<< username << "\n";
     asio::write(socket, asio::buffer(username + "\n"));
 }
@@ -123,7 +126,6 @@ void ChatClient::Shutdown()
     {
         socket.cancel();
         socket.shutdown(asio::ip::tcp::socket::shutdown_both); 
-        message_timer.cancel();
     }
     catch (const system::system_error& e)
     {

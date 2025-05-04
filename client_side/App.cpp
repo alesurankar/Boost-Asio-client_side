@@ -10,9 +10,9 @@ App::App(std::shared_ptr<MessageHandler> handler)
 
 void App::Go()
 {
-	std::cout << "App::Go:\n";
-	PlayerInput(); //1. AppClient(input)
-	DisplayOutput(); //11. AppClient(displayOutput)
+    std::cout << "App::Go:\n";
+    PlayerInput(); //1. AppClient(input)
+    DisplayOutput(); //11. AppClient(displayOutput)
 }
 
 
@@ -45,11 +45,11 @@ void App::PlayerInput() //1. AppClient(input)
 
 void App::DisplayOutput() //11. AppClient(displayOutput)
 {
-	std::cout << "App::DisplayOutput: //11. AppClient(displayOutput)\n";
-	std::pair<int, int> pos = msgHandler->MSGToApp(); //10. MSGClient(middleman)
-	int x = pos.first;
-	int y = pos.second;
-	std::cout << "x: " << x << "\n";
-	std::cout << "y: " << y << "\n";
-	std::cout << "--------------\n";
+    std::cout << "App::DisplayOutput: //11. AppClient(displayOutput)\n";
+    std::pair<int, int> pos = msgHandler->MSGToApp(); //10. MSGClient(middleman)
+    int x = pos.first;
+    int y = pos.second;
+    std::cout << "x: " << x << "\n";
+    std::cout << "y: " << y << "\n";
+    std::cout << "--------------\n";
 }
