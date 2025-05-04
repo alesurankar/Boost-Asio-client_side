@@ -27,7 +27,7 @@ void ChatClient::Start()
             {
                 //SendUsername();
                 //ReceiveMessages();
-                CheckAndSendMessage();
+                CheckAndSend();
             }
             else
             {
@@ -91,7 +91,7 @@ void ChatClient::Start()
 //}
 
 
-void ChatClient::CheckAndSendMessage() //3. Client(TCP)
+void ChatClient::CheckAndSend() //3. Client(TCP)
 {
     //std::cout << "ChatClient::CheckAndSendMessage: " << ", Step 3. Client(TCP)\n";
     auto self = shared_from_this();
@@ -112,7 +112,7 @@ void ChatClient::CheckAndSendMessage() //3. Client(TCP)
                     return;
                 }
                 boost::asio::post(socket.get_executor(), [this, self]() {
-                    CheckAndSendMessage();
+                    CheckAndSend();
                     });
                 std::cout << "Step4--------------\n";
             });
@@ -124,7 +124,7 @@ void ChatClient::CheckAndSendMessage() //3. Client(TCP)
             {
                 if (!ec)
                 {
-                    CheckAndSendMessage();
+                    CheckAndSend();
                 }
             });
     }
