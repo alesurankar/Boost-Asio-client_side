@@ -8,7 +8,8 @@
 
 int main() 
 {
-    std::atomic<bool> running(true);
+    std::atomic<bool> running{ true };
+
     std::shared_ptr<MessageHandler> msgHandler = std::make_shared<MessageHandler>();
     App app(msgHandler);
     
@@ -27,11 +28,11 @@ int main()
         });
     std::thread networking([&]()
         {
-            try 
+            try
             {
                 io.run();
             }
-            catch (const std::exception& e) 
+            catch (const std::exception& e)
             {
                 std::cerr << "Exception in io.run(): " << e.what() << "\n";
             }
