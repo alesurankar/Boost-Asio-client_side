@@ -15,6 +15,11 @@ void MessageHandler::AppToMSG(const std::string& message)  //2. MSGClient(middle
     std::cout << "Step2--------------\n";
 }
 
+//std::string MessageHandler::MSGToClient()  //3. Client(TCP)
+//{
+//    return "Hello";
+//}
+
 
 std::string MessageHandler::MSGToClient()  //3. Client(TCP)
 {
@@ -23,9 +28,9 @@ std::string MessageHandler::MSGToClient()  //3. Client(TCP)
         if (!app_messages.empty())
         {
             std::cout << "Step 3: NetworkingThread::MessageHandler::MSGToClient: " << msg << "\n";
-            msg = app_messages.front();
+            msg = app_messages.front() + "\n";
             app_messages.pop();
-            std::cout << "Popped message: " << msg << "\n";
+            std::cout << "Popped message: " << msg;
             std::cout << "Step3--------------\n";
         }
         else

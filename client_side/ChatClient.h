@@ -22,7 +22,8 @@ private:
     std::string host;
     unsigned short port;
     std::shared_ptr<MessageHandler> msgHandler;
-    boost::asio::steady_timer timer;
+    boost::asio::steady_timer timer; 
+    std::string msg;
 //    std::mutex mtx;
 //    std::queue<std::string> command_queue;
 //    boost::asio::streambuf buffer_;

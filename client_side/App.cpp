@@ -11,7 +11,7 @@ App::App(std::shared_ptr<MessageHandler> msgHandler_in)
 void App::Go()
 {
     std::cout << "App::Go:\n";
-    //PlayerInput(); //1. AppClient(input)
+    PlayerInput(); //1. AppClient(input)
     //DisplayOutput(); //11. AppClient(displayOutput)
 }
 
