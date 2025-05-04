@@ -8,9 +8,15 @@ App::App(std::atomic<bool>& runFlag, std::shared_ptr<MessageHandler> msgHandler_
     running(runFlag)
 {
     outputThread = std::thread(&App::outputLoop, this);
-    outputThread.detach();
 }
 
+App::~App()
+{
+    if (outputThread.joinable())
+    {
+        outputThread.join();
+    }
+}
 
 void App::Go()
 {
@@ -61,7 +67,7 @@ void App::PlayerInput() //1. AppClient(input)
 
 void App::DisplayOutput() //15. AppClient(displayOutput)
 {
-    std::cout << "Step 15, outputThread::App::DisplayOutput:\n\n";
+    //std::cout << "Step 15, outputThread::App::DisplayOutput:\n\n";
     auto optPos = msgHandler->MSGToApp(); 
     if (optPos)
     {

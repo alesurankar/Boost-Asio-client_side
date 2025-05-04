@@ -6,6 +6,7 @@ class App
 {
 public:
 	App(std::atomic<bool>& runFlag, std::shared_ptr<MessageHandler> msgHandler_in);
+	~App();
 	void Go();
 private:
 	void PlayerInput();

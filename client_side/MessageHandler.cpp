@@ -62,6 +62,7 @@ std::optional<std::pair<int, int>> MessageHandler::MSGToApp()
     }
     else
     {
+        std::cout << "[Output] No data to display.\n";
         return std::nullopt;
     }
 }
