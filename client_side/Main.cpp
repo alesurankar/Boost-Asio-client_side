@@ -12,7 +12,7 @@ int main()
     std::atomic<bool> running{ true };
 
     std::shared_ptr<MessageHandler> msgHandler = std::make_shared<MessageHandler>();
-    App app(msgHandler);
+    App app(running, msgHandler);
     
     std::ifstream file("C:/Projects/Python_API_setup_for_NinjaStrike/username.txt");
     std::string username; 

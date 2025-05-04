@@ -26,7 +26,7 @@ void ChatClient::Start()
             if (!ec)
             {
                 //SendUsername();
-                //ReceiveMessages();
+                ReceiveMessages();
                 CheckAndSend();
             }
             else
@@ -45,50 +45,50 @@ void ChatClient::Start()
 //    std::cout << "ChatClient::SendUsername: "<< username << "\n";
 //    asio::write(socket, asio::buffer(username + "\n"));
 //}
-//
-//
-//void ChatClient::ReceiveMessages() //9. Client(TCP)
-//{
-//    std::cout << "ChatClient::ReceiveMessages: " << "//9. Client(TCP)\n";
-//    auto self(shared_from_this());
-//
-//    boost::asio::async_read_until(socket, buffer_, '\n', //8. Server(TCP)
-//        [this, self](boost::system::error_code ec, std::size_t length)
-//        {
-//            if (!ec)
-//            {
-//                std::istream is(&buffer_);
-//                std::string message;
-//                std::getline(is, message);
-//
-//                std::cout << "Received: " << message << "\n";
-//
-//                size_t commaPos = message.find(',');
-//                if (commaPos != std::string::npos)
-//                {
-//                    try
-//                    {
-//                        int x = std::stoi(message.substr(0, commaPos));
-//                        int y = std::stoi(message.substr(commaPos + 1));
-//                        msgHandler->ClientToMSG(x, y); //10. MSGClient(middleman)
-//                    }
-//                    catch (const std::exception& e)
-//                    {
-//                        std::cout << "Failed to convert coordinates: " << e.what() << "\n";
-//                    }
-//                }
-//                else
-//                {
-//                    std::cout << "Invalid coordinate format: " << message << "\n";
-//                }
-//                ReceiveMessages();
-//            }
-//            else
-//            {
-//                Shutdown();
-//            }
-//        });
-//}
+
+
+void ChatClient::ReceiveMessages() //12. Client(TCP)
+{
+    auto self = shared_from_this();
+    boost::asio::async_read_until(socket, input_buffer, '\n',    //12. Client(TCP)
+        [this, self](boost::system::error_code ec, std::size_t length)
+        {
+            if (!ec)
+            {
+                std::istream is(&input_buffer);
+                std::string msg;
+                std::getline(is, msg);
+
+                std::cout << "Step 12, ChatClient::ReadMessage::Received: " << msg << "\n";
+
+                size_t commaPos = msg.find(',');
+                if (commaPos != std::string::npos)
+                {
+                    try
+                    {
+                        int x = std::stoi(msg.substr(0, commaPos));
+                        int y = std::stoi(msg.substr(commaPos + 1));
+                        std::cout << "Step 12, converted: " << "x = " << x << ", y = " << y << "\n";
+                        msgHandler->ClientToMSG(x, y); //13. MSGClient(middleman)
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cout << "Failed to convert coordinates: " << e.what() << "\n";
+                    }
+                }
+                else
+                {
+                    std::cout << "Invalid coordinate format: " << msg << "\n";
+                }
+                ReceiveMessages();
+            }
+            else
+            {
+                //Shutdown();
+            }
+        });
+    std::cout << "Step 12--------------\n";
+}
 
 
 void ChatClient::CheckAndSend() //3. Client(TCP)

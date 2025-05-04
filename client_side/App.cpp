@@ -2,17 +2,29 @@
 #include <iostream>
 
 
-App::App(std::shared_ptr<MessageHandler> msgHandler_in)
+App::App(std::atomic<bool>& runFlag, std::shared_ptr<MessageHandler> msgHandler_in)
     :
-    msgHandler(msgHandler_in)
-{}
+    msgHandler(msgHandler_in),
+    running(runFlag)
+{
+    outputThread = std::thread(&App::outputLoop, this);
+    outputThread.detach();
+}
 
 
 void App::Go()
 {
     std::cout << "App::Go:\n";
     PlayerInput(); //1. AppClient(input)
-    //DisplayOutput(); //11. AppClient(displayOutput)
+}
+
+void App::outputLoop()
+{
+    while (running) 
+    {
+        DisplayOutput(); //11. AppClient(displayOutput)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
 }
 
 
@@ -47,13 +59,18 @@ void App::PlayerInput() //1. AppClient(input)
 }
 
 
-//void App::DisplayOutput() //11. AppClient(displayOutput)
-//{
-//    std::cout << "App::DisplayOutput: //11. AppClient(displayOutput)\n";
-//    std::pair<int, int> pos = msgHandler->MSGToApp(); //10. MSGClient(middleman)
-//    int x = pos.first;
-//    int y = pos.second;
-//    std::cout << "x: " << x << "\n";
-//    std::cout << "y: " << y << "\n";
-//    std::cout << "--------------\n";
-//}
+void App::DisplayOutput() //15. AppClient(displayOutput)
+{
+    std::cout << "Step 15, outputThread::App::DisplayOutput:\n\n";
+    auto optPos = msgHandler->MSGToApp(); 
+    if (optPos)
+    {
+        std::pair<int, int> pos = *optPos;
+        int x = pos.first;
+        int y = pos.second;
+        std::cout << "Step 15-------------Last Step Done\n";
+        std::cout << "x: " << x << "\n";
+        std::cout << "y: " << y << "\n";
+        std::cout << "OUTPUT--------------Last Step Done\n\n";
+    }
+}

@@ -13,7 +13,7 @@ public:
     void Start();
 private:
     //    void SendUsername();
-    //    void ReceiveMessages();
+    void ReceiveMessages();
     void CheckAndSend();
     //    void Shutdown();
 private:
@@ -24,8 +24,8 @@ private:
     std::shared_ptr<MessageHandler> msgHandler;
     boost::asio::steady_timer timer; 
     std::string msg;
+    boost::asio::streambuf input_buffer;
 //    std::mutex mtx;
 //    std::queue<std::string> command_queue;
-//    boost::asio::streambuf buffer_;
 //    boost::asio::steady_timer message_timer; 
 };
