@@ -12,8 +12,7 @@ public:
 //    void ClientToMSG(int x, int y);
 //    std::pair<int, int> MSGToApp();
 private:
-    std::mutex mtx1;
-    std::mutex mtx2;
+    std::mutex mtx;
     std::string msg = "";
     std::queue<std::string> app_messages;
 //    std::queue<std::string> client_messages;

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <thread>
 #include <atomic>
+#include <chrono>
 
 
 int main() 
@@ -40,6 +41,7 @@ int main()
 
     while (running)
 	{
+        std::this_thread::sleep_for(std::chrono::seconds(10));
         app.Go();
 	}
     

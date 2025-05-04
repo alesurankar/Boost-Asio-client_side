@@ -8,7 +8,7 @@ MessageHandler::MessageHandler()
 
 void MessageHandler::AppToMSG(const std::string& message)  //2. MSGClient(middleman)
 {
-    std::lock_guard<std::mutex> lock(mtx1);
+    std::lock_guard<std::mutex> lock(mtx);
     std::cout << "Step 2: MainThread::MessageHandler::AppToMSG: " << message << "\n";
     app_messages.push(message);
     std::cout << "Pushed message: " << message << "\n";
@@ -19,7 +19,7 @@ void MessageHandler::AppToMSG(const std::string& message)  //2. MSGClient(middle
 std::string MessageHandler::MSGToClient()  //3. Client(TCP)
 {
     {
-        std::lock_guard<std::mutex> lock(mtx2);
+        std::lock_guard<std::mutex> lock(mtx);
         if (!app_messages.empty())
         {
             std::cout << "Step 3: NetworkingThread::MessageHandler::MSGToClient: " << msg << "\n";
