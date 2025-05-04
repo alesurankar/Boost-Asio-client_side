@@ -18,7 +18,7 @@ void App::Go()
 
 void App::PlayerInput() //1. AppClient(input)
 {
-    std::cout << "MainThread::App::PlayerInput:\n";
+    std::cout << "MainThread::App::PlayerInput:\n\n";
     std::string input;
     std::getline(std::cin, input);
 
