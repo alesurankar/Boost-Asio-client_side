@@ -10,10 +10,10 @@ public:
 	void Go();
 private:
 	void PlayerInput();
-	void outputLoop();
+	void OutputLoop();
 	void DisplayOutput();
 private:
 	std::shared_ptr<MessageHandler> msgHandler;
-	std::thread outputThread; 
+	std::thread OutputThread; 
 	std::atomic<bool>& running;
 };

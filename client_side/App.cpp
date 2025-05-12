@@ -7,16 +7,18 @@ App::App(std::atomic<bool>& runFlag, std::shared_ptr<MessageHandler> msgHandler_
     msgHandler(msgHandler_in),
     running(runFlag)
 {
-    outputThread = std::thread(&App::outputLoop, this);
+    OutputThread = std::thread(&App::OutputLoop, this);
 }
+
 
 App::~App()
 {
-    if (outputThread.joinable())
+    if (OutputThread.joinable())
     {
-        outputThread.join();
+        OutputThread.join();
     }
 }
+
 
 void App::Go()
 {
@@ -24,12 +26,13 @@ void App::Go()
     PlayerInput(); //1. AppClient(input)
 }
 
-void App::outputLoop()
+
+void App::OutputLoop()
 {
     while (running) 
     {
         DisplayOutput(); //11. AppClient(displayOutput)
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
