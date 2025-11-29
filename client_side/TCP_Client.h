@@ -5,6 +5,7 @@
 class TCP_Client
 {
 public:
-	TCP_Client();
+	TCP_Client(boost::asio::io_context& io_context);
+	void Connect();
 private:
 };
