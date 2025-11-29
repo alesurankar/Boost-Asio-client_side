@@ -6,15 +6,16 @@
 
 int main() {
 
-	std::unique_ptr<TCP_Client> client;
+	std::shared_ptr<TCP_Client> client;
 	std::atomic<bool> running = true;;
 	App app(running);
 
 	boost::asio::io_context io;
-	std::string address = "address1";
+	std::string address = "127.0.0.1";
 	uint16_t port = 1234;
+	std::string username = "majmun";
 
-	client = std::make_unique<TCP_Client>(io, address, port);
+	client = std::make_shared<TCP_Client>(io, address, port, username);
 	client->Connect();
 
 	std::thread networking([&]() {

@@ -4,13 +4,13 @@
 #include <string>
 #include <cstdint>
 
-class TCP_Client
+class TCP_Client : public std::enable_shared_from_this<TCP_Client>
 {
 public:
-	TCP_Client(boost::asio::io_context& io_context, std::string address_in, uint16_t port_in);
+	TCP_Client(boost::asio::io_context& io_context, std::string address_in, uint16_t port_in, std::string username_in);
 	void Connect();
 private:
-	boost::asio::io_context& io;
-	std::string address;
-	uint16_t port;
+	boost::asio::ip::tcp::socket socket;
+	boost::asio::ip::tcp::endpoint endpoint;
+	std::string username;
 };
