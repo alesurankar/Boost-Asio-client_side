@@ -1,5 +1,4 @@
-﻿#include <iostream>
-#include <atomic>
+﻿#include <atomic>
 #include <memory>
 #include <thread>
 #include "TCP_Client.h"
@@ -12,7 +11,10 @@ int main() {
 	App app(running);
 
 	boost::asio::io_context io;
-	client = std::make_unique<TCP_Client>(io);
+	std::string address = "address1";
+	uint16_t port = 1234;
+
+	client = std::make_unique<TCP_Client>(io, address, port);
 	client->Connect();
 
 	std::thread networking([&]() {
