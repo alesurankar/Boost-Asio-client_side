@@ -1,19 +1,18 @@
-﻿#include "ChatClient.h"
-#include <iostream>
-#include <fstream> 
-#include <string>
-#include <filesystem>
+﻿#include <iostream>
+#include <atomic>
+#include <memory>
+#include "TCP_Client.h"
+#include "App.h"
 
 int main() {
-    std::ifstream file("username.txt");
-    std::string username;
-    if (file.is_open())
-    {
-        std::getline(file, username);
-    }
 
-    boost::asio::io_context io;
-    ChatClient client(io, "127.0.0.1", 1234, username);
-    client.Start();
-    return 0;
+	std::unique_ptr<TCP_Client> client;
+	std::atomic<bool> running = true;;
+	App app(running);
+
+	while (running) {
+		app.Go();
+	}
+
+	return 0;
 }
